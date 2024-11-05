@@ -16,12 +16,12 @@ logger = logging.getLogger(__name__)
 
 # Configuração do Couchbase
 try:
-    couchbase_host = os.environ.get('COUCHBASE_HOST', 'localhost')
+    couchbase_host = 'cb.gomnpmkp8tqp8d1t.cloud.couchbase.com'
     couchbase_bucket = os.environ.get('COUCHBASE_BUCKET', 'DevHealthy')
-    couchbase_user = os.environ.get('COUCHBASE_USER', 'Grupo09')
-    couchbase_password = os.environ.get('COUCHBASE_PASSWORD', '222628')
+    couchbase_user = os.environ.get('COUCHBASE_USER', 'DevHealthy')
+    couchbase_password = os.environ.get('COUCHBASE_PASSWORD', 'Bk01Tj02@')
 
-    cluster = Cluster.connect(f'couchbase://{couchbase_host}',
+    cluster = Cluster.connect(f'couchbases://{couchbase_host}',
                             ClusterOptions(PasswordAuthenticator(couchbase_user, couchbase_password)))
     bucket = cluster.bucket(couchbase_bucket)
     collection = bucket.default_collection()
@@ -37,7 +37,7 @@ except Exception as e:
 # Rota de Teste
 @app.route('/test', methods=['GET'])
 def test():
-    return 'Servidor está rodando!'
+    return "Conexão bem-sucedida!", 200
 
 # Rota para página principal
 @app.route('/')
