@@ -22,7 +22,7 @@ function carregarPacientes() {
                 const option = document.createElement('option');
                 option.value = paciente.id;
                 option.textContent = paciente.nome;
-                option.setAttribute('data-cpf', paciente.cpf); // Adicione o CPF como atributo de dados
+                option.setAttribute('data-cpf', paciente.cpf);
                 selectPaciente.appendChild(option);
             });
         })
@@ -77,19 +77,29 @@ function mostrarFormularioExame() {
 function criarExame() {
     const pacienteId = document.getElementById('selectPaciente').value;
     const tipoExame = document.getElementById('tipoExame').value;
+    
+    // Pega todos os inputs gerados dinamicamente dentro do formExameContainer
     const formExameContainer = document.getElementById('formExameContainer');
-    const formData = new FormData(formExameContainer);
+    const inputs = formExameContainer.querySelectorAll('input, textarea');
 
+    // Cria um objeto para armazenar os detalhes do exame
+    const detalhes = {};
+    inputs.forEach(input => {
+        detalhes[input.name] = input.value;
+    });
+
+    // Validações
     if (!pacienteId || !tipoExame) {
         alert('Por favor, preencha todos os campos.');
         return;
     }
 
+    // Estrutura de dados do exame
     const exame = {
         pacienteId,
         tipoExame,
         data: new Date().toISOString(),
-        detalhes: Object.fromEntries(formData.entries())
+        detalhes
     };
 
     fetch('/criar-exame', {

@@ -78,7 +78,7 @@
                         const option = document.createElement('option');
                         option.value = paciente.id;
                         option.textContent = paciente.nome;
-                        option.setAttribute('data-cpf', paciente.cpf); // Adicione o CPF como atributo de dados
+                        option.setAttribute('data-cpf', paciente.cpf); // Adiciona o CPF como atributo
                         selectPaciente.appendChild(option);
                     });
                 })
@@ -133,23 +133,33 @@
         function criarExame() {
             const pacienteId = document.getElementById('selectPaciente').value;
             const tipoExame = document.getElementById('tipoExame').value;
-            const formExameContainer = document.getElementById('formExameContainer');
-            const formData = new FormData(formExameContainer);
 
+            // Pega todos os inputs gerados dinamicamente dentro do formExameContainer
+            const formExameContainer = document.getElementById('formExameContainer');
+            const inputs = formExameContainer.querySelectorAll('input, textarea');
+
+            // Cria um objeto para armazenar os detalhes do exame
+            const detalhes = {};
+            inputs.forEach(input => {
+                detalhes[input.name] = input.value;
+            });
+
+            // Validações
             if (!pacienteId || !tipoExame) {
                 alert('Por favor, preencha todos os campos.');
                 return;
             }
 
+            // Estrutura de dados do exame
             const exame = {
                 pacienteId,
                 tipoExame,
                 data: new Date().toISOString(),
-                detalhes: Object.fromEntries(formData.entries())
+                detalhes
             };
 
             fetch('/criar-exame', {
-                method: 'PUT',
+                method: 'POST',  // Alterado para POST, pois é mais adequado para criação
                 headers: {
                     'Content-Type': 'application/json'
                 },
@@ -167,6 +177,11 @@
             .catch(error => {
                 console.error('Erro ao criar exame:', error);
             });
+        }
+
+        function toggleMenu(menuId) {
+            const menu = document.getElementById(menuId);
+            menu.classList.toggle('active');
         }
     </script>
 </body>

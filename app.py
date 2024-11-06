@@ -6,6 +6,7 @@ from couchbase.auth import PasswordAuthenticator
 from couchbase.exceptions import DocumentNotFoundException, CouchbaseException
 import os
 import logging
+from datetime import datetime
 
 app = Flask(__name__)
 CORS(app)  # Habilita CORS para todas as rotas
@@ -116,7 +117,7 @@ def consultar_paciente(cpf):
         return jsonify({"error": str(e)}), 500
 
 # Rota para criar exame
-@app.route('/criar-exame', methods=['PUT'])
+@app.route('/criar-exame', methods=['POST'])
 def criar_exame():
     try:
         exame = request.json
@@ -124,26 +125,21 @@ def criar_exame():
         tipo_exame = exame['tipoExame']
         detalhes_exame = exame['detalhes']
         data_exame = exame['data']
-
         logger.info(f"Recebido exame para paciente {paciente_id}: {exame}")
 
-        # Obter o documento do paciente
-        document_id = f"paciente::{paciente_id}"
-        result = collection.get(document_id)
-        paciente = result.content_as[dict]
+        # Criar um ID único para o exame
+        exame_id = f"exame::{paciente_id}::{datetime.now().strftime('%Y%m%d%H%M%S')}"
 
-        # Adicionar o exame ao documento do paciente
-        if 'exames' not in paciente:
-            paciente['exames'] = []
-        paciente['exames'].append({
+        # Salvar o exame no Couchbase
+        exame_data = {
             'tipo': tipo_exame,
             'data': data_exame,
-            'detalhes': detalhes_exame
-        })
-
-        # Atualizar o documento do paciente
-        collection.upsert(document_id, paciente)
-        logger.info(f"Exame adicionado ao paciente: {paciente_id}")
+            'detalhes': detalhes_exame,
+            'pacienteId': paciente_id,
+            'type': 'exame'
+        }
+        collection.upsert(exame_id, exame_data)
+        logger.info(f"Exame criado com sucesso para paciente: {paciente_id}")
         return jsonify({"message": "Exame criado com sucesso!"}), 201
     except DocumentNotFoundException:
         logger.warning(f"Paciente não encontrado: {paciente_id}")
@@ -156,35 +152,45 @@ def criar_exame():
         return jsonify({"error": str(e)}), 500
 
 # Rota para consultar exames
-@app.route('/consultar-exames', methods=['GET'])
-def consultar_exames():
-    try:
-        query = 'SELECT * FROM `DevHealthy` WHERE type = "exame"'
-        result = cluster.query(query)
-        exames = [row for row in result]
-        logger.info(f"Exames encontrados: {exames}")
-        return jsonify(exames), 200
-    except CouchbaseException as e:
-        logger.error("Erro ao consultar exames: %s", e)
-        return jsonify({"error": str(e)}), 500
-
+# Rota para consultar exames de um paciente por CPF
 @app.route('/api/consultar-exames/<cpf>', methods=['GET'])
 def consultar_exames_paciente(cpf):
     if not cluster:
         return jsonify({"error": "Conexão com banco de dados não estabelecida"}), 500
-        
+
     try:
-        query = f'SELECT * FROM `DevHealthy` WHERE type = "exame" AND cpf = "{cpf}"'
-        result = cluster.query(query)
+        # Log para verificar o CPF recebido
+        logger.info(f"Buscando exames para o paciente com CPF: {cpf}")
+
+        # Primeiro, buscamos o paciente pelo CPF para pegar o pacienteId
+        paciente_query = f'SELECT META().id FROM `DevHealthy` WHERE type = "paciente" AND cpf = "{cpf}"'
+        paciente_result = cluster.query(paciente_query)
+        paciente = [row for row in paciente_result]
+
+        if not paciente:
+            logger.warning(f"Paciente com CPF {cpf} não encontrado")
+            return jsonify({"error": "Paciente não encontrado"}), 404
+        
+        paciente_id = paciente[0]['id']  # Recupera o ID do paciente
+        logger.info(f"Paciente encontrado: {paciente_id}")
+
+        # Agora buscamos os exames associados ao pacienteId
+        exame_query = f'SELECT * FROM `DevHealthy` WHERE type = "exame" AND pacienteId = "{paciente_id}"'
+        result = cluster.query(exame_query)
         exames = [row for row in result]
+        
+        if not exames:
+            logger.warning(f"Não foram encontrados exames para o paciente {cpf} (pacienteId: {paciente_id})")
+        
         logger.info(f"Exames encontrados para o paciente {cpf}: {exames}")
         return jsonify(exames), 200
     except CouchbaseException as e:
-        logger.error("Erro ao consultar exames do paciente: %s", e)
-        return jsonify({"error": str(e)}), 500
+        logger.error(f"Erro ao consultar exames do paciente {cpf}: {e}")
+        return jsonify({"error": "Erro ao consultar exames"}), 500
     except Exception as e:
-        logger.error("Erro inesperado ao consultar exames do paciente: %s", e)
-        return jsonify({"error": str(e)}), 500
+        logger.error(f"Erro inesperado ao consultar exames do paciente {cpf}: {e}")
+        return jsonify({"error": "Erro inesperado ao consultar exames"}), 500
+
 
 @app.route('/api/remover-exame/<cpf>/<data>', methods=['DELETE'])
 def remover_exame(cpf, data):

@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Consultar Exame - Dev Healthy</title>
     <link rel="stylesheet" href="/static/consultar_exame/consultar_exame.css">
-    <link rel="stylesheet" href="/static/Home/home.css"> <!-- Adicione o CSS do home para o Navbar -->
+    <link rel="stylesheet" href="/static/Home/home.css">
 </head>
 <body>
     <!-- Barra de Navegação -->
@@ -31,18 +31,19 @@
     </nav>
 
     <div class="container">
-        <h1>Consultar Exame</h1>
+        <h2>Consultar Exame</h2>
         <form id="formConsultarExame">
-            <label for="consultaPaciente">Nome ou CPF:</label>
-            <input type="text" id="consultaPaciente" list="sugestoesPacientes" required>
+            <label for="consultaPaciente">Nome ou CPF do paciente:</label>
+            <input type="text" id="consultaPaciente" list="sugestoesPacientes" placeholder="Digite nome ou CPF" required>
             <datalist id="sugestoesPacientes"></datalist>
-            <button type="submit">Buscar</button>
+            <button id="botao_buscar" type="button" onclick="consultarExame()">Buscar Exames</button>
         </form>
+
         <div id="mensagem"></div>
         <table id="resultadoConsulta">
             <thead>
                 <tr>
-                    <th>Nome</th>
+                    <th>Nome do Paciente</th>
                     <th>CPF</th>
                     <th>Tipo de Exame</th>
                     <th>Data do Exame</th>
@@ -50,7 +51,7 @@
                 </tr>
             </thead>
             <tbody>
-                <!-- Resultados da consulta serão inseridos aqui -->
+                <!-- Os exames serão inseridos aqui -->
             </tbody>
         </table>
     </div>
