@@ -162,8 +162,8 @@ def consultar_exames_paciente(cpf):
         # Log para verificar o CPF recebido
         logger.info(f"Buscando exames para o paciente com CPF: {cpf}")
 
-        # Primeiro, buscamos o paciente pelo CPF para pegar o pacienteId
-        paciente_query = f'SELECT META().id FROM `DevHealthy` WHERE type = "paciente" AND cpf = "{cpf}"'
+        # Primeiro, buscamos o paciente pelo CPF para pegar o pacienteId e o nome
+        paciente_query = f'SELECT META().id, nome FROM `DevHealthy` WHERE type = "paciente" AND cpf = "{cpf}"'
         paciente_result = cluster.query(paciente_query)
         paciente = [row for row in paciente_result]
 
@@ -172,7 +172,8 @@ def consultar_exames_paciente(cpf):
             return jsonify({"error": "Paciente não encontrado"}), 404
         
         paciente_id = paciente[0]['id']  # Recupera o ID do paciente
-        logger.info(f"Paciente encontrado: {paciente_id}")
+        paciente_nome = paciente[0]['nome']  # Recupera o nome do paciente
+        logger.info(f"Paciente encontrado: {paciente_id}, Nome: {paciente_nome}")
 
         # Agora buscamos os exames associados ao pacienteId
         exame_query = f'SELECT * FROM `DevHealthy` WHERE type = "exame" AND pacienteId = "{paciente_id}"'
@@ -181,6 +182,10 @@ def consultar_exames_paciente(cpf):
         
         if not exames:
             logger.warning(f"Não foram encontrados exames para o paciente {cpf} (pacienteId: {paciente_id})")
+        
+        # Adiciona o nome do paciente a cada exame
+        for exame in exames:
+            exame['DevHealthy']['pacienteNome'] = paciente_nome
         
         logger.info(f"Exames encontrados para o paciente {cpf}: {exames}")
         return jsonify(exames), 200
@@ -211,6 +216,22 @@ def remover_exame(cpf, data):
         return jsonify({"error": f"Erro no banco de dados: {str(e)}"}), 500
     except Exception as e:
         return jsonify({"error": f"Erro inesperado: {str(e)}"}), 500
+
+# Rota para obter a lista de pacientes
+@app.route('/obter-pacientes', methods=['GET'])
+def obter_pacientes():
+    try:
+        query = 'SELECT META().id, nome, cpf FROM `DevHealthy` WHERE type = "paciente"'
+        result = cluster.query(query)
+        pacientes = [row for row in result]
+        logger.info(f"Pacientes encontrados: {pacientes}")
+        return jsonify(pacientes), 200
+    except CouchbaseException as e:
+        logger.error("Erro ao obter pacientes: %s", e)
+        return jsonify({"error": "Erro ao obter pacientes"}), 500
+    except Exception as e:
+        logger.error("Erro inesperado ao obter pacientes: %s", e)
+        return jsonify({"error": "Erro inesperado ao obter pacientes"}), 500
 
 if __name__ == '__main__':
     app.run(debug=True, port=5000)

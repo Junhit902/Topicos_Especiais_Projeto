@@ -18,6 +18,8 @@ function carregarPacientes() {
         .then(response => response.json())
         .then(data => {
             const selectPaciente = document.getElementById('selectPaciente');
+            selectPaciente.innerHTML = '<option value="">Selecione um paciente</option>'; // Limpa as opções anteriores
+
             data.forEach(paciente => {
                 const option = document.createElement('option');
                 option.value = paciente.id;
@@ -77,7 +79,7 @@ function mostrarFormularioExame() {
 function criarExame() {
     const pacienteId = document.getElementById('selectPaciente').value;
     const tipoExame = document.getElementById('tipoExame').value;
-    
+
     // Pega todos os inputs gerados dinamicamente dentro do formExameContainer
     const formExameContainer = document.getElementById('formExameContainer');
     const inputs = formExameContainer.querySelectorAll('input, textarea');
@@ -103,7 +105,7 @@ function criarExame() {
     };
 
     fetch('/criar-exame', {
-        method: 'PUT',
+        method: 'POST',  // Alterado para POST, pois é mais adequado para criação
         headers: {
             'Content-Type': 'application/json'
         },
@@ -125,9 +127,5 @@ function criarExame() {
 
 function toggleMenu(menuId) {
     const menu = document.getElementById(menuId);
-    if (menuId === 'offcanvasMenu') {
-        menu.classList.toggle('show');
-    } else {
-        menu.style.display = menu.style.display === 'block' ? 'none' : 'block';
-    }
+    menu.classList.toggle('active');
 }
