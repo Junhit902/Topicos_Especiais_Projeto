@@ -56,19 +56,21 @@ function consultarExame(event) {
                 if (data.length === 0) {
                     document.getElementById('mensagem').textContent = 'Nenhum exame encontrado.';
                 } else {
+                    const uniqueExams = new Set();
                     data.forEach(exame => {
-                        const tr = document.createElement('tr');
-                        tr.innerHTML = `
-                            <td>${consulta}</td> <!-- O CPF ou Nome -->
-                            <td>${exame.DevHealthy.pacienteId}</td> <!-- Paciente ID -->
-                            <td>${exame.DevHealthy.tipo}</td>
-                            <td>${new Date(exame.DevHealthy.data).toLocaleDateString()}</td>
-                            <td>
-                                <div>Observações: ${exame.DevHealthy.detalhes.observacoes || 'N/A'}</div>
-                                <div>Região: ${exame.DevHealthy.detalhes.regiao || 'N/A'}</div>
-                            </td>
-                        `;
-                        tbody.appendChild(tr);
+                        const exameId = exame.DevHealthy.exameId;
+                        if (!uniqueExams.has(exameId)) {
+                            uniqueExams.add(exameId);
+                            const tr = document.createElement('tr');
+                            tr.innerHTML = `
+                                <td>${consulta}</td> <!-- O CPF ou Nome -->
+                                <td>${exame.DevHealthy.pacienteId}</td> <!-- Paciente ID -->
+                                <td>${exame.DevHealthy.tipo}</td>
+                                <td>${new Date(exame.DevHealthy.data).toLocaleDateString()}</td>
+                                <td>${formatarDetalhes(exame.DevHealthy.tipo, exame.DevHealthy.detalhes)}</td>
+                            `;
+                            tbody.appendChild(tr);
+                        }
                     });
                 }
             }
@@ -79,6 +81,30 @@ function consultarExame(event) {
         });
 }
 
+function formatarDetalhes(tipo, detalhes) {
+    switch (tipo) {
+        case 'Sangue':
+            return `
+                <div>Hemoglobina: ${detalhes.hemoglobina || 'N/A'}</div>
+                <div>Leucócitos: ${detalhes.leucocitos || 'N/A'}</div>
+            `;
+        case 'Urina':
+            return `
+                <div>pH: ${detalhes.ph || 'N/A'}</div>
+                <div>Densidade: ${detalhes.densidade || 'N/A'}</div>
+            `;
+        case 'Eletrocardiograma':
+            return `
+                <div>Frequência Cardíaca: ${detalhes.frequenciaCardiaca || 'N/A'}</div>
+                <div>Ritmo: ${detalhes.ritmo || 'N/A'}</div>
+            `;
+        default:
+            return `
+                <div>Observações: ${detalhes.observacoes || 'N/A'}</div>
+                <div>Região: ${detalhes.regiao || 'N/A'}</div>
+            `;
+    }
+}
 
 function toggleMenu(menuId) {
     const menu = document.getElementById(menuId);

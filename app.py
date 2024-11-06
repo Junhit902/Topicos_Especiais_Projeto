@@ -212,18 +212,5 @@ def remover_exame(cpf, data):
     except Exception as e:
         return jsonify({"error": f"Erro inesperado: {str(e)}"}), 500
 
-# Rota para obter a lista de pacientes
-@app.route('/obter-pacientes', methods=['GET'])
-def obter_pacientes():
-    try:
-        query = 'SELECT META().id, nome, cpf FROM `DevHealthy` WHERE type = "paciente"'
-        result = cluster.query(query)
-        pacientes = [{'id': row['id'], 'nome': row['nome'], 'cpf': row['cpf']} for row in result]
-        logger.info(f"Pacientes encontrados: {pacientes}")
-        return jsonify(pacientes), 200
-    except CouchbaseException as e:
-        logger.error("Erro ao obter pacientes: %s", e)
-        return jsonify({"error": str(e)}), 500
-
 if __name__ == '__main__':
     app.run(debug=True, port=5000)
