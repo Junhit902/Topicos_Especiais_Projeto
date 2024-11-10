@@ -1,4 +1,4 @@
-*Grupo 09*\
+#Grupo 09\
 Darlan Souza Oliveira - 211926\
 Gustavo Eiji Tamezava - 222226\
 Lucas Nascimento de Campos - 223324\
