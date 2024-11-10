@@ -1,7 +1,8 @@
 document.addEventListener("DOMContentLoaded", function () {
     document.getElementById("formConsultarExame").addEventListener("submit", consultarExame);
     document.getElementById("consultaPaciente").addEventListener("input", buscarSugestoesPacientes);
-    document.getElementById("botao_buscar").addEventListener("click", consultarExame); // Garante que o botão "Buscar exame" funcione
+    // Remova a linha abaixo se já está adicionando o listener ao formulário
+    // document.getElementById("botao_buscar").addEventListener("click", consultarExame);
 });
 
 function buscarSugestoesPacientes(event) {
@@ -27,17 +28,14 @@ function buscarSugestoesPacientes(event) {
 }
 
 function consultarExame(event) {
-    // Previne o envio do formulário se necessário
-    if (event) {
-        event.preventDefault();
-    }
+    event.preventDefault();
 
-    const consulta = document.getElementById('consultaPaciente').value;
+    const consulta = document.getElementById('consultaPaciente').value.trim();
     const tbody = document.querySelector('#resultadoConsulta tbody');
     tbody.innerHTML = ''; // Limpa os resultados anteriores
 
-    if (!consulta.trim()) {
-        document.getElementById('mensagem').textContent = "Por favor, insira um nome ou CPF válido.";
+    if (!consulta) {
+        document.getElementById('mensagem').textContent = "Por favor, insira um CPF válido.";
         return;
     }
 
@@ -49,25 +47,26 @@ function consultarExame(event) {
     })
         .then(response => response.json())
         .then(data => {
+            console.log('Dados recebidos:', data); // Linha para depuração
             if (data.error) {
                 document.getElementById('mensagem').textContent = data.error;
             } else {
-                document.getElementById('mensagem').textContent = ''; // Limpa a mensagem de erro
+                document.getElementById('mensagem').textContent = '';
                 if (data.length === 0) {
                     document.getElementById('mensagem').textContent = 'Nenhum exame encontrado.';
                 } else {
                     const uniqueExams = new Set();
                     data.forEach(exame => {
-                        const exameId = exame.DevHealthy.exameId;
+                        const exameId = exame.id || `${exame.tipo}-${exame.data}`;
                         if (!uniqueExams.has(exameId)) {
                             uniqueExams.add(exameId);
                             const tr = document.createElement('tr');
                             tr.innerHTML = `
-                                <td>${consulta}</td> <!-- O CPF ou Nome -->
-                                <td>${exame.DevHealthy.pacienteId}</td> <!-- Paciente ID -->
-                                <td>${exame.DevHealthy.tipo}</td>
-                                <td>${new Date(exame.DevHealthy.data).toLocaleDateString()}</td>
-                                <td>${formatarDetalhes(exame.DevHealthy.tipo, exame.DevHealthy.detalhes)}</td>
+                                <td>${exame.pacienteNome}</td>
+                                <td>${consulta}</td>
+                                <td>${exame.tipo}</td>
+                                <td>${new Date(exame.data).toLocaleDateString()}</td>
+                                <td>${formatarDetalhes(exame.tipo, exame.detalhes)}</td>
                             `;
                             tbody.appendChild(tr);
                         }
@@ -94,8 +93,9 @@ function formatarDetalhes(tipo, detalhes) {
                 <div>Densidade: ${detalhes.densidade || 'N/A'}</div>
             `;
         case 'Eletrocardiograma':
+            const frequenciaCardiaca = detalhes.frequenciaCardiaca || detalhes.frequencia_cardiaca || detalhes.frequencia || 'N/A';
             return `
-                <div>Frequência Cardíaca: ${detalhes.frequenciaCardiaca || 'N/A'}</div>
+                <div>Frequência Cardíaca: ${frequenciaCardiaca}</div>
                 <div>Ritmo: ${detalhes.ritmo || 'N/A'}</div>
             `;
         default:
@@ -108,9 +108,5 @@ function formatarDetalhes(tipo, detalhes) {
 
 function toggleMenu(menuId) {
     const menu = document.getElementById(menuId);
-    if (menuId === 'offcanvasMenu') {
-        menu.classList.toggle('show');
-    } else {
-        menu.style.display = menu.style.display === 'block' ? 'none' : 'block';
-    }
+    menu.classList.toggle('active');
 }

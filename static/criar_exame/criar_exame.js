@@ -33,6 +33,48 @@ function carregarPacientes() {
         });
 }
 
+function criarExame() {
+    const pacienteId = document.getElementById('selectPaciente').value;
+    const tipoExame = document.getElementById('tipoExame').value;
+    const detalhes = document.getElementById('detalhes').value;
+    const data = document.getElementById('dataExame').value;
+
+    const exame = {
+        pacienteId,
+        tipoExame,
+        detalhes,
+        data
+    };
+
+    fetch('/criar-exame', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(exame)
+    })
+    .then(response => response.json())
+    .then(data => {
+        document.getElementById('mensagem').textContent = data.message || data.error;
+        if (data.success) {
+            document.getElementById('mensagem').textContent = 'Exame criado com sucesso!';
+            resetForm();
+        } else {
+            document.getElementById('mensagem').textContent = 'Erro ao criar exame.';
+        }
+    })
+    .catch(error => {
+        console.error('Erro ao criar exame:', error);
+        document.getElementById('mensagem').textContent = 'Erro ao criar exame.';
+    });
+}
+
+function resetForm() {
+    document.getElementById('formCriarExame').reset();
+    document.getElementById('cpfPaciente').textContent = '';
+    document.getElementById('selectPaciente').selectedIndex = 0;
+}
+
 function mostrarFormularioExame() {
     const tipoExame = document.getElementById('tipoExame').value;
     const formExameContainer = document.getElementById('formExameContainer');
@@ -74,55 +116,6 @@ function mostrarFormularioExame() {
             <input type="text" id="ritmo" name="ritmo" required>
         `;
     }
-}
-
-function criarExame() {
-    const pacienteId = document.getElementById('selectPaciente').value;
-    const tipoExame = document.getElementById('tipoExame').value;
-
-    // Pega todos os inputs gerados dinamicamente dentro do formExameContainer
-    const formExameContainer = document.getElementById('formExameContainer');
-    const inputs = formExameContainer.querySelectorAll('input, textarea');
-
-    // Cria um objeto para armazenar os detalhes do exame
-    const detalhes = {};
-    inputs.forEach(input => {
-        detalhes[input.name] = input.value;
-    });
-
-    // Validações
-    if (!pacienteId || !tipoExame) {
-        alert('Por favor, preencha todos os campos.');
-        return;
-    }
-
-    // Estrutura de dados do exame
-    const exame = {
-        pacienteId,
-        tipoExame,
-        data: new Date().toISOString(),
-        detalhes
-    };
-
-    fetch('/criar-exame', {
-        method: 'POST',  // Alterado para POST, pois é mais adequado para criação
-        headers: {
-            'Content-Type': 'application/json'
-        },
-        body: JSON.stringify(exame)
-    })
-    .then(response => response.json())
-    .then(data => {
-        const resultadoDiv = document.getElementById('resultadoCriacao');
-        if (data.error) {
-            resultadoDiv.innerHTML = `<p>${data.error}</p>`;
-        } else {
-            resultadoDiv.innerHTML = `<p>${data.message}</p>`;
-        }
-    })
-    .catch(error => {
-        console.error('Erro ao criar exame:', error);
-    });
 }
 
 function toggleMenu(menuId) {

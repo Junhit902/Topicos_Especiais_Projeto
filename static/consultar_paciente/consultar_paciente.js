@@ -1,18 +1,41 @@
 document.addEventListener("DOMContentLoaded", function () {
     document.getElementById("formConsultarPaciente").addEventListener("submit", consultarPaciente);
+    document.getElementById("cpfPaciente").addEventListener("input", buscarSugestoesPacientes);
 });
+
+function buscarSugestoesPacientes(event) {
+    const consulta = event.target.value;
+
+    if (consulta.length >= 2) { // Buscar sugestões quando houver pelo menos 2 caracteres
+        fetch(`/sugestoes-pacientes?consulta=${encodeURIComponent(consulta)}`)
+            .then(response => response.json())
+            .then(data => {
+                const datalist = document.getElementById('sugestoesPacientes');
+                datalist.innerHTML = ''; // Limpa as sugestões anteriores
+
+                data.forEach(paciente => {
+                    const option = document.createElement('option');
+                    option.value = `${paciente.nome} - ${paciente.cpf}`;
+                    datalist.appendChild(option);
+                });
+            })
+            .catch(error => {
+                console.error('Erro ao buscar sugestões de pacientes:', error);
+            });
+    }
+}
 
 function consultarPaciente(event) {
     event.preventDefault();
 
-    const cpfPaciente = document.getElementById('cpfPaciente').value;
+    const cpfPaciente = document.getElementById('cpfPaciente').value.split(' - ').pop(); // Extrai o CPF do valor selecionado
 
     if (!cpfPaciente) {
         alert("Por favor, forneça um CPF para a consulta.");
         return;
     }
 
-    fetch(`/consultar-paciente?cpf=${encodeURIComponent(cpfPaciente)}`)
+    fetch(`/consultar-paciente/${encodeURIComponent(cpfPaciente)}`)
         .then(response => response.json())
         .then(data => {
             const resultadoDiv = document.getElementById('resultadoConsulta');
@@ -30,14 +53,14 @@ function consultarPaciente(event) {
                         <p><strong>Cidade:</strong> ${data.endereco.cidade || 'N/A'}</p>
                         <p><strong>Rua:</strong> ${data.endereco.rua || 'N/A'}</p>
                         <p><strong>Número:</strong> ${data.endereco.numero || 'N/A'}</p>
-                        <p><strong>CEP:</strong> ${data.endereco.cep || 'N/A'}</p>
-                        <p><strong>CPF:</strong> ${data.cpf || 'N/A'}</p>
+                        <p><strong>CEP:</strong> ${data.endereco.cep || 'N/A'} </p>
                     </div>
                 `;
             }
         })
         .catch(error => {
             console.error('Erro ao consultar paciente:', error);
+            document.getElementById('resultadoConsulta').innerHTML = '<p>Erro ao consultar paciente</p>';
         });
 }
 

@@ -1,1 +1,1 @@
-QueryOptions
+from couchbase.subdocument import upsert

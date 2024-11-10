@@ -3,9 +3,9 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Consultar Paciente - Dev Healthy</title>
-    <link rel="stylesheet" href="/static/consultar_paciente/consultar_paciente.css">
-    <link rel="stylesheet" href="/static/Home/home.css"> <!-- Adicione o CSS do home para o Navbar -->
+    <title>Editar Paciente - Dev Healthy</title>
+    <link rel="stylesheet" href="/static/editar_paciente/editar_paciente.css">
+    <link rel="stylesheet" href="/static/Home/home.css">
     <link rel="icon" href="/static/Home/imagens/Captura_de_tela_2024-11-02_124301-removebg-preview.ico" type="image/x-icon">
 </head>
 <body>
@@ -38,17 +38,44 @@
     </nav>
 
     <div class="container">
-        <h2>Consultar Paciente</h2>
-        <form id="formConsultarPaciente">
-            <label for="cpfPaciente">CPF do paciente:</label>
-            <input type="text" id="cpfPaciente" list="sugestoesPacientes" placeholder="Somente números" required>
-            <datalist id="sugestoesPacientes"></datalist>
-            <button type="submit">Consultar</button>
+        <h2>Editar Paciente</h2>
+        <form id="formBuscarPaciente">
+            <label for="cpfBuscar">CPF do paciente:</label>
+            <input type="text" id="cpfBuscar" placeholder="Somente números" required>
+            <button id="botao_buscar" type="submit">Buscar Paciente</button>
         </form>
 
-        <div id="resultadoConsulta"></div>
+        <div id="mensagem"></div>
+
+        <form id="formEditarPaciente" style="display: none;">
+            <label for="nomePaciente">Nome:</label>
+            <input type="text" id="nomePaciente">
+
+            <label for="dataNascimento">Data de Nascimento:</label>
+            <input type="date" id="dataNascimento">
+
+            <label for="sexoPaciente">Sexo:</label>
+            <input type="text" id="sexoPaciente">
+
+            <label for="ruaPaciente">Rua:</label>
+            <input type="text" id="ruaPaciente">
+
+            <label for="numeroPaciente">Número:</label>
+            <input type="text" id="numeroPaciente">
+
+            <label for="cidadePaciente">Cidade:</label>
+            <input type="text" id="cidadePaciente">
+
+            <label for="estadoPaciente">Estado:</label>
+            <input type="text" id="estadoPaciente">
+
+            <label for="cepPaciente">CEP:</label>
+            <input type="text" id="cepPaciente">
+
+            <button id="botao_editar" type="submit">Salvar Alterações</button>
+        </form>
     </div>
 
-    <script src="/static/consultar_paciente/consultar_paciente.js"></script>
+    <script src="/static/editar_paciente/editar_paciente.js"></script>
 </body>
 </html>

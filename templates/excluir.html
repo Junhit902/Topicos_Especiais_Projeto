@@ -3,9 +3,9 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Consultar Paciente - Dev Healthy</title>
-    <link rel="stylesheet" href="/static/consultar_paciente/consultar_paciente.css">
-    <link rel="stylesheet" href="/static/Home/home.css"> <!-- Adicione o CSS do home para o Navbar -->
+    <title>Excluir Paciente ou Exame - Dev Healthy</title>
+    <link rel="stylesheet" href="/static/excluir/excluir.css">
+    <link rel="stylesheet" href="/static/Home/home.css">
     <link rel="icon" href="/static/Home/imagens/Captura_de_tela_2024-11-02_124301-removebg-preview.ico" type="image/x-icon">
 </head>
 <body>
@@ -38,17 +38,47 @@
     </nav>
 
     <div class="container">
-        <h2>Consultar Paciente</h2>
-        <form id="formConsultarPaciente">
-            <label for="cpfPaciente">CPF do paciente:</label>
-            <input type="text" id="cpfPaciente" list="sugestoesPacientes" placeholder="Somente números" required>
-            <datalist id="sugestoesPacientes"></datalist>
-            <button type="submit">Consultar</button>
+        <h2>Excluir Paciente ou Exame</h2>
+        <form id="formSelecionar">
+            <label for="selecao">O que deseja excluir?</label>
+            <select id="selecao" required>
+                <option value="">Selecione</option>
+                <option value="paciente">Paciente</option>
+                <option value="exame">Exame</option>
+            </select>
+            <button id="botao_selecionar" type="submit">Selecionar</button>
         </form>
 
-        <div id="resultadoConsulta"></div>
+        <div id="formExcluirPaciente" style="display: none;">
+            <h3>Excluir Paciente</h3>
+            <form id="formBuscarPaciente">
+                <label for="cpfBuscar">CPF do paciente:</label>
+                <input type="text" id="cpfBuscar" placeholder="Somente números" required>
+                <button id="botao_buscar_paciente" type="submit">Buscar Paciente</button>
+            </form>
+            <div id="dadosPaciente"></div>
+            <button id="botao_excluir_paciente" style="display: none;" onclick="excluirPaciente()">Excluir Paciente</button>
+        </div>
+
+        <div id="formExcluirExame" style="display: none;">
+            <h3>Excluir Exame</h3>
+            <form id="formBuscarExames">
+                <label for="cpfBuscarExame">CPF do paciente:</label>
+                <input type="text" id="cpfBuscarExame" placeholder="Somente números" required>
+                <button id="botao_buscar_exame" type="submit">Buscar Exames</button>
+            </form>
+            <div id="seletorExames" style="display: none;">
+                <label for="exameSelecionado">Selecione o exame:</label>
+                <select id="exameSelecionado"></select>
+                <button id="botao_selecionar_exame" type="button" onclick="selecionarExame()">Selecionar Exame</button>
+            </div>
+            <div id="dadosExame"></div>
+            <button id="botao_excluir_exame" style="display: none;" onclick="excluirExame()">Excluir Exame</button>
+        </div>
+
+        <div id="mensagem"></div>
     </div>
 
-    <script src="/static/consultar_paciente/consultar_paciente.js"></script>
+    <script src="/static/excluir/excluir.js"></script>
 </body>
 </html>
