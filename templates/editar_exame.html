@@ -54,16 +54,12 @@
 
         <form id="formEditarExame" style="display: none;">
             <label for="tipoExame">Tipo de Exame:</label>
-            <input type="text" id="tipoExame">
+            <input type="text" id="tipoExame" readonly>
 
             <label for="dataExame">Data do Exame:</label>
             <input type="datetime-local" id="dataExame">
 
-            <label for="hemoglobina">Hemoglobina:</label>
-            <input type="text" id="hemoglobina">
-
-            <label for="leucocitos">Leucócitos:</label>
-            <input type="text" id="leucocitos">
+            <div id="detalhesExame"></div>
 
             <button id="botao_editar" type="submit">Salvar Alterações</button>
         </form>

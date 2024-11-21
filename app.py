@@ -5,10 +5,10 @@ from couchbase.options import ClusterOptions, QueryOptions, UpsertOptions
 from couchbase.auth import PasswordAuthenticator
 from couchbase.exceptions import DocumentNotFoundException, CouchbaseException
 from couchbase.mutation_state import MutationState
-import os
-import logging
 from datetime import datetime
 from couchbase.subdocument import upsert
+import os
+import logging
 
 app = Flask(__name__)
 CORS(app)  # Habilita CORS para todas as rotas
@@ -340,38 +340,45 @@ def consultar_exame(document_id):
         exame = result.content_as[dict]
         return jsonify(exame), 200
     except DocumentNotFoundException:
-        logger.warning(f"Exame não encontrado: {document_id}")
         return jsonify({"error": "Exame não encontrado"}), 404
     except CouchbaseException as e:
-        logger.error("Erro ao consultar exame: %s", e)
-        return jsonify({"error": str(e)}), 500
+        return jsonify({"error": f"Erro no banco de dados: {str(e)}"}), 500
+    except Exception as e:
+        return jsonify({"error": f"Erro inesperado: {str(e)}"}), 500
 
 # Rota para editar exame
 @app.route('/editar-exame/<document_id>', methods=['PUT'])
 def editar_exame(document_id):
     try:
         exame_atualizado = request.json
-
-        # Busca o exame atual
         result = collection.get(document_id)
         exame_atual = result.content_as[dict]
 
-        # Atualiza os campos apenas se foram fornecidos
-        exame_atual['tipo'] = exame_atualizado.get('tipo', exame_atual['tipo'])
-        exame_atual['data'] = exame_atualizado.get('data', exame_atual['data'])
-        exame_atual['detalhes']['hemoglobina'] = exame_atualizado['detalhes'].get('hemoglobina', exame_atual['detalhes']['hemoglobina'])
-        exame_atual['detalhes']['leucocitos'] = exame_atualizado['detalhes'].get('leucocitos', exame_atual['detalhes']['leucocitos'])
+        exame_atual['tipo'] = exame_atualizado['tipo']
+        exame_atual['data'] = exame_atualizado['data']
 
-        # Atualiza o documento no Couchbase
+        if exame_atual['tipo'] == 'Sangue':
+            exame_atual['detalhes']['hemoglobina'] = exame_atualizado['detalhes'].get('hemoglobina', exame_atual['detalhes'].get('hemoglobina', ''))
+            exame_atual['detalhes']['leucocitos'] = exame_atualizado['detalhes'].get('leucocitos', exame_atual['detalhes'].get('leucocitos', ''))
+        elif exame_atual['tipo'] == 'Urina':
+            exame_atual['detalhes']['ph'] = exame_atualizado['detalhes'].get('ph', exame_atual['detalhes'].get('ph', ''))
+            exame_atual['detalhes']['densidade'] = exame_atualizado['detalhes'].get('densidade', exame_atual['detalhes'].get('densidade', ''))
+        elif exame_atual['tipo'] == 'Eletrocardiograma':
+            exame_atual['detalhes']['frequenciaCardiaca'] = exame_atualizado['detalhes'].get('frequenciaCardiaca', exame_atual['detalhes'].get('frequenciaCardiaca', ''))
+            exame_atual['detalhes']['ritmo'] = exame_atualizado['detalhes'].get('ritmo', exame_atual['detalhes'].get('ritmo', ''))
+        elif exame_atual['tipo'] in ['Raio-X', 'Ultrassom']:
+            exame_atual['detalhes']['observacoes'] = exame_atualizado['detalhes'].get('observacoes', exame_atual['detalhes'].get('observacoes', ''))
+            exame_atual['detalhes']['regiao'] = exame_atualizado['detalhes'].get('regiao', exame_atual['detalhes'].get('regiao', ''))
+
         collection.upsert(document_id, exame_atual)
-        logger.info(f"Exame atualizado com sucesso: {exame_atual}")
-        return jsonify({"message": "Exame atualizado com sucesso!"}), 200
-    except DocumentNotFoundException:
-        logger.warning(f"Exame não encontrado: {document_id}")
-        return jsonify({"error": "Exame não encontrado"}), 404
+        logger.info(f"Exame atualizado com sucesso: {document_id}")
+        return jsonify({"message": "Exame atualizado com sucesso"}), 200
     except CouchbaseException as e:
-        logger.error("Erro ao editar exame: %s", e)
-        return jsonify({"error": str(e)}), 500
+        logger.error(f"Erro ao editar exame: {str(e)}")
+        return jsonify({"error": f"Erro no banco de dados: {str(e)}"}), 500
+    except Exception as e:
+        logger.error(f"Erro inesperado ao editar exame: {str(e)}")
+        return jsonify({"error": f"Erro inesperado: {str(e)}"}), 500
 
 # Rota para excluir paciente
 @app.route('/excluir-paciente/<cpf>', methods=['DELETE'])
